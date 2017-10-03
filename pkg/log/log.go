@@ -39,6 +39,19 @@ func NewLogger() *logrus.Entry {
 	return logrus.WithFields(logrus.Fields{}) // no custom fields for now but will add context/packages
 }
 
+// For context logging we want different contexts to support different log levels.
+// We do not want to create a new logger for each context (goroutine)
+//  - https://stackoverflow.com/questions/18361750/correct-approach-to-global-logging-in-golang
+// So we have separate loggers for each level, but share the same logger between goroutines for a specific log level.
+// The logger supports concurrent write access
+func NewPkgLogger(envPrefix string) *logrus.Logger {
+
+	theLogger := logrus.New()
+	Setup(envPrefix, theLogger)
+
+	return theLogger
+}
+
 // Configure global logger.
 // We base this on the environment (and deliberately avoid the configuration file).
 //     1. The environment is always available - even before the configuration file has been parsed.
@@ -51,14 +64,10 @@ type LogConfig struct {
 	StackLevels      []string `split_words:"true" default:"panic"`                                // Log levels to add the stack
 }
 
-// Configure global logger.
-// We base this on the environment (and deliberately avoid the configuration file).
-//     1. The environment is always available - even before the configuration file has been parsed.
-//     2. The environment is easier to override with docker (as opposed to a file inside the containers which is more difficult)
-func init() {
-
+// Setup the logger from the environment
+func Setup(envPrefix string, theLogger *logrus.Logger) {
 	var logConfig LogConfig
-	err := envconfig.Process("LOG", &logConfig)
+	err := envconfig.Process(envPrefix, &logConfig)
 	if err != nil {
 		fmt.Errorf("Failed to parse log environment: %s", err)
 	}
@@ -66,7 +75,7 @@ func init() {
 	// Validate LogLevel
 	logLevel, err := logrus.ParseLevel(logConfig.Level)
 	if err != nil {
-		fmt.Errorf("Failed to parse LOG_LEVEL(%s) environment: %s", logConfig.Level, err)
+		fmt.Errorf("Failed to parse %s_LEVEL(%s) environment: %s", envPrefix, logConfig.Level, err)
 		logLevel = logrus.InfoLevel
 	}
 
@@ -76,7 +85,7 @@ func init() {
 	for _, level := range logConfig.CallerLevels {
 		logLevel, err := logrus.ParseLevel(level)
 		if err != nil {
-			fmt.Errorf("Failed to parse LOG_CALLER_LEVELS(%s) environment: %s", level, err)
+			fmt.Errorf("Failed to parse %s_CALLER_LEVELS(%s) environment: %s", envPrefix, level, err)
 		} else {
 			callerLevelsStr = append(callerLevelsStr, logLevel.String())
 			callerLevels = append(callerLevels, logLevel)
@@ -89,37 +98,51 @@ func init() {
 	for _, level := range logConfig.StackLevels {
 		logLevel, err := logrus.ParseLevel(level)
 		if err != nil {
-			fmt.Errorf("Failed to parse LOG_STACK_LEVELS(%s) environment: %s", level, err)
+			fmt.Errorf("Failed to parse %s_STACK_LEVELS(%s) environment: %s", envPrefix, level, err)
 		} else {
 			stackLevelsStr = append(stackLevelsStr, logLevel.String())
 			stackLevels = append(stackLevels, logLevel)
 		}
 	}
 	// Add a trace to standard out - useful for errors configuring logging
-	//fmt.Printf("LOG_LEVEL: %s LOG_DISABLE_TIMESTAMP: %t, LOG_JSON_FORMAT: %t LOG_CALLER_LEVELS %v LOG_STACK_LEVELS %v\n",
-	//	logConfig.Level, logConfig.DisableTimestamp, logConfig.JsonFormat, callerLevelsStr, stackLevelsStr)
+	//fmt.Printf("%s_LEVEL: %s %s_DISABLE_TIMESTAMP: %t, %s_JSON_FORMAT: %t %s_CALLER_LEVELS %v %s_STACK_LEVELS %v\n",
+	//	envPrefix, logConfig.Level,
+	//	envPrefix, logConfig.DisableTimestamp,
+	//	envPrefix, logConfig.JsonFormat,
+	//	envPrefix, callerLevelsStr,
+	//	envPrefix, stackLevelsStr)
 
 	// Now apply the configuration
 	if logConfig.JsonFormat {
 		// JSON with/without timestamp
-		logrus.SetFormatter(&logrus.JSONFormatter{
+		theLogger.Formatter = &logrus.JSONFormatter{
 			DisableTimestamp: logConfig.DisableTimestamp,
-		})
+		}
 	} else {
 		// Text with/without timestamp
-		logrus.SetFormatter(&logrus.TextFormatter{
+		theLogger.Formatter = &logrus.TextFormatter{
 			FullTimestamp:    true,
 			DisableTimestamp: logConfig.DisableTimestamp,
-		})
+		}
 	}
-	logrus.SetLevel(logLevel)
+	theLogger.SetLevel(logLevel)
 
 	// Output to stdout instead of the default stderr.
-	logrus.SetOutput(os.Stdout)
+	theLogger.Out = os.Stdout
 
 	// Add the stack hook.
-	logrus.AddHook(logrus_stack.NewHook(callerLevels, stackLevels))
+	theLogger.AddHook(logrus_stack.NewHook(callerLevels, stackLevels))
 
 	// Add the stack hook.
-	logrus.AddHook(NewNewlineHook())
+	theLogger.AddHook(NewNewlineHook())
+}
+
+// Configure global logger.
+// We base this on the environment (and deliberately avoid the configuration file).
+//     1. The environment is always available - even before the configuration file has been parsed.
+//     2. The environment is easier to override with docker (as opposed to a file inside the containers which is more difficult)
+func init() {
+	// This bypasses the mutex protection setting up the logrus global logger - but is only called from this package init
+	// Alternative would be to create a new vsys specific "global" logger - since all vsys packages use NewLogger()
+	Setup("LOG", logrus.StandardLogger())
 }
