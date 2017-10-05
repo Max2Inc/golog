@@ -42,7 +42,7 @@ func NewLogger() *logrus.Entry {
 // For context logging we want different contexts to support different log levels.
 // We do not want to create a new logger for each context (goroutine)
 //  - https://stackoverflow.com/questions/18361750/correct-approach-to-global-logging-in-golang
-// So we have separate loggers for each level, but share the same logger between goroutines for a specific log level.
+// So we have separate loggers for each function (e.g. polling in the pkg/agent), but share the same logger between goroutines 
 // The logger supports concurrent write access
 func NewPkgLogger(envPrefix string) *logrus.Logger {
 
