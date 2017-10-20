@@ -102,3 +102,10 @@ The logging can be controlled by some environment variables
 
 
 
+## Unit Test
+'''
+    glide 
+    docker exec -ti mas_mas-go-builder_1 sh
+    cd /go/src/vsys/golog/pkg/log
+'''
+

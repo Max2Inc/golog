@@ -1,0 +1,24 @@
+hash: 48e472ef256daca796f4f74e6ee5fa6cf32209e1236a5a8a7a5b5bc640775c1f
+updated: 2017-10-20T14:57:22.923803509Z
+imports:
+- name: github.com/facebookgo/stack
+  version: 751773369052141c013c6e827a71e8f35c07879c
+- name: github.com/kelseyhightower/envconfig
+  version: f611eb38b3875cc3bd991ca91c51d06446afa14c
+- name: github.com/neiledgar/logrus-stack
+  version: 607a317eeaeddbba36b618195ce4b11cae18f1bb
+- name: github.com/sirupsen/logrus
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+- name: golang.org/x/crypto
+  version: 453249f01cfeb54c3d549ddb75ff152ca243f9d8
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/net
+  version: 3f122ce3dbbe488b7e6a8bdb26f41edec852a40b
+  subpackages:
+  - context
+- name: golang.org/x/sys
+  version: e4594059fe4cde2daf423055a596c2cd1e6c9adf
+  subpackages:
+  - unix
+testImports: []
