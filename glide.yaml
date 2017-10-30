@@ -1,0 +1,11 @@
+package: vsys/golog
+import:
+- package: github.com/kelseyhightower/envconfig
+  version: ^1.3.0
+- package: github.com/neiledgar/logrus-stack
+  version: 607a317eeaeddbba36b618195ce4b11cae18f1bb
+- package: github.com/sirupsen/logrus
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+- package: golang.org/x/net
+  subpackages:
+  - context
