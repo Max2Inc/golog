@@ -1,24 +1,27 @@
-hash: ac247b7f337e3ec2b7ba62afd73d831839084dc629ae8f3b868902a802353756
-updated: 2017-10-30T17:26:49.344856713Z
+hash: afce3548bec426de1856e913bcc4cfec25513e47ddaf4e940de64622b632e01d
+updated: 2019-01-29T11:30:41.112586622Z
 imports:
 - name: github.com/facebookgo/stack
   version: 751773369052141c013c6e827a71e8f35c07879c
 - name: github.com/kelseyhightower/envconfig
   version: f611eb38b3875cc3bd991ca91c51d06446afa14c
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
 - name: github.com/neiledgar/logrus-stack
   version: 607a317eeaeddbba36b618195ce4b11cae18f1bb
 - name: github.com/sirupsen/logrus
-  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+  version: e1e72e9de974bd926e5c56f83753fba2df402ce5
 - name: golang.org/x/crypto
-  version: 453249f01cfeb54c3d549ddb75ff152ca243f9d8
+  version: 94eea52f7b742c7cbe0b03b22f0c4c8631ece122
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
-  version: 3f122ce3dbbe488b7e6a8bdb26f41edec852a40b
+  version: dc871a5d77e227f5bbf6545176ef3eeebf87e76e
   subpackages:
   - context
 - name: golang.org/x/sys
-  version: e4594059fe4cde2daf423055a596c2cd1e6c9adf
+  version: 63fc586f45fe72d95d5240a5d5eb95e6503907d3
   subpackages:
   - unix
+  - windows
 testImports: []
